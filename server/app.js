@@ -13,11 +13,28 @@ mongoose.connect('mongodb+srv://admin:admin@pipedrivertobling.xtpd1.gcp.mongodb.
 });
 app.use(morgan('tiny'))
 app.use(bodyParser.json());
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function randomDate(start, end) {
+    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+}
 Client.find({}).then(async clients=>{
     const random = require('random-name')
     if(clients.length === 0){
         for(let i=0; i<10; i++){
-            let newClient = new Client({firstName:random.first(), lastName: random.last()})
+            const numberOfDebts = getRandomInt(1,10)
+            const firstName = random.first()
+            const lastName = random.last()
+            let debts =[]
+            for(let i=0; i<numberOfDebts; i++){
+                debts.push({description:`Inadimplencia gerada automaticamente para testes ${i}`, value:getRandomInt(10,8000), date:randomDate(new Date(2012, 0, 1), new Date())
+            })
+            }
+            let newClient = new Client({firstName, lastName, debts})
             await newClient.save()
         }
     }
@@ -26,6 +43,13 @@ Client.find({}).then(async clients=>{
 })
 app.get("/client", function(req,res){
     Client.find({}).then(clients=>{
+        clients = clients.map(client=>{
+            const totalDebt = client.debts.reduce((acc, debt)=>{
+                return acc+debt.value
+            },0)
+
+            return{...client, totalDebt}
+        })
         res.status(200).json({clients})
     }).catch(err=>{
         res.status(500).send("Problem accessing db")
