@@ -31,6 +31,7 @@ Form {
 }
 
 .mainList {
+	grid-gap: 8px;
 	min-width: 80%;
 	height: 100vh;
 	display: grid;

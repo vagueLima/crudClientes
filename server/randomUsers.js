@@ -1,3 +1,5 @@
+const Client = require('./models/Client');
+
 function getRandomInt(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);

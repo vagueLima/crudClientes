@@ -86,7 +86,7 @@ export default function Home() {
 				<Form>
 					<Form.Control
 						type="text"
-						placeholder="Filtro"
+						placeholder="Buscar"
 						value={filter}
 						onChange={(el) => setFilter(el.target.value)}
 					/>
@@ -103,7 +103,7 @@ export default function Home() {
 								className="sortHeader"
 								onClick={() => setSortMode("totalDebt")}
 							>
-								Débito Total ↕
+								Valor ↕
 							</th>
 							<th className="sortHeader" onClick={() => setSortMode("since")}>
 								Desde ↕
