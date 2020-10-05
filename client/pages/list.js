@@ -1,18 +1,19 @@
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import { useResource } from "react-request-hook";
-import { useEffect } from "react";
-
+import { useEffect, useState } from "react";
+import { Table } from "react-bootstrap";
 export default function Home() {
-	const [clients, getClients] = useResource(() => ({
+	const [clientRequest, getClients] = useResource(() => ({
 		url: `/client`,
 		method: "GET",
 	}));
-
+	const [clients, setClientes] = useState([]);
 	useEffect(() => getClients(), []);
 	useEffect(() => {
+		clientRequest.data ? setClientes(clientRequest.data.clients) : [];
 		console.log(clients);
-	}, [clients]);
+	}, [clientRequest]);
 
 	return (
 		<div className={styles.container}>
@@ -22,7 +23,29 @@ export default function Home() {
 			</Head>
 
 			<main className={styles.main}>
-				<h2 className={styles.title}>List</h2>
+				<h2 className={styles.title}>Lista de Inadimplentes</h2>
+				<Table striped bordered hover>
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Primeiro Nome</th>
+							<th>Último Nome</th>
+							<th>Débito Total</th>
+						</tr>
+					</thead>
+					<tbody>
+						{clients.map((client, i) => {
+							return (
+								<tr>
+									<td>{i + 1}</td>
+									<td>{client.firstName}</td>
+									<td>{client.lastName}</td>
+									<td>{client.totalDebt}</td>
+								</tr>
+							);
+						})}
+					</tbody>
+				</Table>
 			</main>
 
 			<footer className={styles.footer}>

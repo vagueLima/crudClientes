@@ -1,4 +1,5 @@
 import "../styles/globals.css";
+import "bootstrap/dist/css/bootstrap.min.css";
 import { RequestProvider } from "react-request-hook";
 import axios from "axios";
 const axiosInstance = axios.create({
