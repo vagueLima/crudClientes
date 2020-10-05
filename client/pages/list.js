@@ -3,47 +3,8 @@ import styles from "../styles/Home.module.css";
 import { useResource } from "react-request-hook";
 import { useEffect, useState } from "react";
 import { Table, Form, Button } from "react-bootstrap";
-function dataFormatada(rawDate) {
-	var data = new Date(rawDate),
-		dia = data.getDate().toString(),
-		diaF = dia.length == 1 ? "0" + dia : dia,
-		mes = (data.getMonth() + 1).toString(), //+1 pois no getMonth Janeiro começa com zero.
-		mesF = mes.length == 1 ? "0" + mes : mes,
-		anoF = data.getFullYear();
-	return diaF + "/" + mesF + "/" + anoF;
-}
-function debtTable(debts) {
-	console.log(debts);
-	return (
-		<tr>
-			<td colSpan="3">
-				<Table size="sm">
-					<thead>
-						<tr>
-							<th>#</th>
-							<th> Descricao</th>
-							<th> Valor</th>
-							<th> Data</th>
-						</tr>
-					</thead>
+import DebtTable from "./components/debtTables";
 
-					<tbody>
-						{debts.map((debt, i) => {
-							return (
-								<tr key={i}>
-									<td>{i + 1}</td>
-									<td>{debt.description}</td>
-									<td>{debt.value}</td>
-									<td>{dataFormatada(debt.date)}</td>
-								</tr>
-							);
-						})}
-					</tbody>
-				</Table>
-			</td>
-		</tr>
-	);
-}
 export default function Home() {
 	const [clientRequest, getClients] = useResource(() => ({
 		url: `/client`,
@@ -51,6 +12,7 @@ export default function Home() {
 	}));
 	const [clients, setClientes] = useState([]);
 	const [sortMode, setSortMode] = useState("");
+	const [filter, setFilter] = useState("");
 	useEffect(() => getClients(), []);
 	useEffect(() => {
 		clientRequest.data
@@ -96,6 +58,10 @@ export default function Home() {
 		console.log(newClients);
 		setClientes([...newClients]);
 	};
+	const filterClients = (evt) => {
+		evt.preventDefault();
+		console.log(filter);
+	};
 	return (
 		<div className={styles.container}>
 			<Head>
@@ -106,8 +72,12 @@ export default function Home() {
 			<main className={styles.main}>
 				<h2 className={styles.title}>Lista de Inadimplentes</h2>
 				<Form>
-					<Form.Control type="text" placeholder="Filtro" />
-					<Button variant="primary" type="submit">
+					<Form.Control
+						type="text"
+						placeholder="Filtro"
+						onKeyPress={(el) => setFilter(el.target.value)}
+					/>
+					<Button variant="primary" type="submit" onClick={filterClients}>
 						Buscar
 					</Button>
 				</Form>
@@ -134,7 +104,7 @@ export default function Home() {
 										<td>{client.name}</td>
 										<td>{client.totalDebt}</td>
 									</tr>
-									{client.toggleDebts ? debtTable(client.debts) : ""}
+									{client.toggleDebts ? DebtTable(client.debts) : ""}
 								</React.Fragment>
 							);
 						})}
