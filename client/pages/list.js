@@ -9,12 +9,35 @@ export default function Home() {
 		method: "GET",
 	}));
 	const [clients, setClientes] = useState([]);
+	const [sortMode, setSortMode] = useState("");
 	useEffect(() => getClients(), []);
 	useEffect(() => {
 		clientRequest.data ? setClientes(clientRequest.data.clients) : [];
 		console.log(clients);
 	}, [clientRequest]);
 
+	const ascending = (a, b) => {
+		if (a[sortMode] > b[sortMode]) {
+			return 1;
+		} else {
+			return -1;
+		}
+	};
+	useEffect(() => {
+		const sortedClientes = clients.sort(ascending);
+		setClientes([...sortedClientes]);
+		console.log(clients);
+	}, [sortMode]);
+
+	const sortByName = (firstOrLast) => {
+		if (firstOrLast === "firstName") {
+			setSortMode("firstName");
+		} else if (firstOrLast === "lastName") {
+			setSortMode("lastName");
+		} else if (firstOrLast === "totalDebt") {
+			setSortMode("totalDebt");
+		}
+	};
 	return (
 		<div className={styles.container}>
 			<Head>
@@ -28,15 +51,15 @@ export default function Home() {
 					<thead>
 						<tr>
 							<th>#</th>
-							<th>Primeiro Nome</th>
-							<th>Último Nome</th>
-							<th>Débito Total</th>
+							<th onClick={() => sortByName("firstName")}>Primeiro Nome</th>
+							<th onClick={() => sortByName("lastName")}>Último Nome</th>
+							<th onClick={() => sortByName("totalDebt")}>Débito Total</th>
 						</tr>
 					</thead>
 					<tbody>
 						{clients.map((client, i) => {
 							return (
-								<tr>
+								<tr key={i}>
 									<td>{i + 1}</td>
 									<td>{client.firstName}</td>
 									<td>{client.lastName}</td>
