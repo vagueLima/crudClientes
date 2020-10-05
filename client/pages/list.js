@@ -4,6 +4,7 @@ import { useResource } from "react-request-hook";
 import { useEffect, useState } from "react";
 import { Table, Form, Button } from "react-bootstrap";
 import DebtTable from "./components/debtTables";
+import { dataFormatada } from "../generalUse";
 
 export default function Home() {
 	const [clientRequest, getClients] = useResource(() => ({
@@ -13,21 +14,25 @@ export default function Home() {
 	const [clients, setClientes] = useState([]);
 	const [sortMode, setSortMode] = useState("");
 	const [filter, setFilter] = useState("");
+
 	useEffect(() => getClients(), []);
+	useEffect(() => sortClients(), [sortMode]);
+	useEffect(() => filterClients(), [filter]);
 	useEffect(() => {
-		clientRequest.data
-			? setClientes(
-					clientRequest.data.clients.map((client) => ({
-						name: `${client.firstName} ${client.lastName}`,
-						debts: client.debts,
-						totalDebt: client.totalDebt,
-						toggleDebts: false,
-					}))
-			  )
-			: [];
+		clientRequest.data ? setClientes(getRawClientList()) : [];
 		console.log(clients);
 	}, [clientRequest]);
 
+	const getRawClientList = () => {
+		if (!clientRequest.data) return [];
+		return clientRequest.data.clients.map((client) => ({
+			name: `${client.firstName} ${client.lastName}`,
+			debts: client.debts,
+			totalDebt: client.totalDebt,
+			since: client.debts[0].date,
+			toggleDebts: false,
+		}));
+	};
 	const ascending = (a, b) => {
 		if (a[sortMode] > b[sortMode]) {
 			return 1;
@@ -35,19 +40,12 @@ export default function Home() {
 			return -1;
 		}
 	};
-	useEffect(() => {
+
+	const sortClients = () => {
 		const sortedClientes = clients.sort(ascending);
 		setClientes([...sortedClientes]);
-		console.log(clients);
-	}, [sortMode]);
-
-	const sortByName = (firstOrLast) => {
-		if (firstOrLast === "name") {
-			setSortMode("name");
-		} else if (firstOrLast === "totalDebt") {
-			setSortMode("totalDebt");
-		}
 	};
+
 	const toggleDebts = (index) => {
 		const newClients = clients.map((client, i) => {
 			if (i == index) {
@@ -59,28 +57,23 @@ export default function Home() {
 		setClientes([...newClients]);
 	};
 
-	useEffect(() => {
-		filterClients();
-	}, [filter]);
 	const filterClients = () => {
-		if (filter === "" && clientRequest.data) {
+		if (sortMode == "") {
 			setClientes(
-				clientRequest.data.clients.map((client) => ({
-					name: `${client.firstName} ${client.lastName}`,
-					debts: client.debts,
-					totalDebt: client.totalDebt,
-					toggleDebts: false,
-				}))
-			);
-		} else {
-			setClientes(
-				clients.filter((client) =>
+				getRawClientList().filter((client) =>
 					client.name.toLowerCase().includes(filter.toLowerCase())
 				)
 			);
+		} else {
+			const sortedClientes = getRawClientList()
+				.filter((client) =>
+					client.name.toLowerCase().includes(filter.toLowerCase())
+				)
+				.sort(ascending);
+			setClientes([...sortedClientes]);
 		}
-		console.log(filter);
 	};
+
 	return (
 		<div className={styles.container}>
 			<Head>
@@ -88,7 +81,7 @@ export default function Home() {
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 
-			<main className={styles.main}>
+			<main className="mainList">
 				<h2 className={styles.title}>Lista de Inadimplentes</h2>
 				<Form>
 					<Form.Control
@@ -99,12 +92,22 @@ export default function Home() {
 					/>
 				</Form>
 
-				<Table bordered hover>
+				<Table className="clientsTable" bordered hover>
 					<thead>
 						<tr>
 							<th>#</th>
-							<th onClick={() => sortByName("name")}>Nome do Cliente</th>
-							<th onClick={() => sortByName("totalDebt")}>Débito Total</th>
+							<th className="sortHeader" onClick={() => setSortMode("name")}>
+								Nome do Cliente ↕{" "}
+							</th>
+							<th
+								className="sortHeader"
+								onClick={() => setSortMode("totalDebt")}
+							>
+								Débito Total ↕
+							</th>
+							<th className="sortHeader" onClick={() => setSortMode("since")}>
+								Desde ↕
+							</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -112,6 +115,7 @@ export default function Home() {
 							return (
 								<React.Fragment>
 									<tr
+										className="clientRow"
 										key={i}
 										onClick={() => {
 											toggleDebts(i);
@@ -120,6 +124,7 @@ export default function Home() {
 										<td>{i + 1}</td>
 										<td>{client.name}</td>
 										<td>R$ {client.totalDebt}.00</td>
+										<td>{dataFormatada(client.since)}</td>
 									</tr>
 									{client.toggleDebts ? DebtTable(client.debts) : ""}
 								</React.Fragment>
@@ -127,17 +132,16 @@ export default function Home() {
 						})}
 					</tbody>
 				</Table>
+				<footer className={styles.footer}>
+					<a
+						href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						Por Lucas Lima
+					</a>
+				</footer>
 			</main>
-
-			<footer className={styles.footer}>
-				<a
-					href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					Por Lucas Lima
-				</a>
-			</footer>
 		</div>
 	);
 }

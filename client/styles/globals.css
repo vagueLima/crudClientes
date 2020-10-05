@@ -17,3 +17,22 @@ a {
 Form {
 	display: flex;
 }
+
+.clientRow {
+	cursor: pointer;
+}
+
+.sortHeader {
+	cursor: pointer;
+}
+
+.clientsTable {
+	overflow-y: scroll;
+}
+
+.mainList {
+	min-width: 80%;
+	height: 100vh;
+	display: grid;
+	grid-template-rows: min-content max-content 1fr min-content;
+}
