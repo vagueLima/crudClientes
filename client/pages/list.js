@@ -58,8 +58,27 @@ export default function Home() {
 		console.log(newClients);
 		setClientes([...newClients]);
 	};
-	const filterClients = (evt) => {
-		evt.preventDefault();
+
+	useEffect(() => {
+		filterClients();
+	}, [filter]);
+	const filterClients = () => {
+		if (filter === "" && clientRequest.data) {
+			setClientes(
+				clientRequest.data.clients.map((client) => ({
+					name: `${client.firstName} ${client.lastName}`,
+					debts: client.debts,
+					totalDebt: client.totalDebt,
+					toggleDebts: false,
+				}))
+			);
+		} else {
+			setClientes(
+				clients.filter((client) =>
+					client.name.toLowerCase().includes(filter.toLowerCase())
+				)
+			);
+		}
 		console.log(filter);
 	};
 	return (
@@ -75,11 +94,9 @@ export default function Home() {
 					<Form.Control
 						type="text"
 						placeholder="Filtro"
-						onKeyPress={(el) => setFilter(el.target.value)}
+						value={filter}
+						onChange={(el) => setFilter(el.target.value)}
 					/>
-					<Button variant="primary" type="submit" onClick={filterClients}>
-						Buscar
-					</Button>
 				</Form>
 
 				<Table bordered hover>
@@ -102,7 +119,7 @@ export default function Home() {
 									>
 										<td>{i + 1}</td>
 										<td>{client.name}</td>
-										<td>{client.totalDebt}</td>
+										<td>R$ {client.totalDebt}.00</td>
 									</tr>
 									{client.toggleDebts ? DebtTable(client.debts) : ""}
 								</React.Fragment>
